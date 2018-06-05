@@ -1,0 +1,81 @@
+
+// Given a GPX track:
+//  Load it
+//      There are 1 or more Tracks, each has 1 or more Segments, each has 1 or more Points
+//  Analyze it
+//      Remove points with hpop/dpop > 2 (& track those removed)
+//      Split into runs when time difference is > 5 or 10 seconds
+//      Get rid of short runs (< 5 or 10 points) (& track those removed)
+//      Calculate max speed (& track those removed)
+//          Remove top 5% points by distance between points
+//          Remove top 5% points by speed
+//      Smooth speed using weighted average
+//      Smooth track lat/lon using weighted positional average
+//      Deduce activity per run
+//          Determine average speed for a run, give weight per possible activity
+//          Use max speed AND/OR relative speed (multiplier between average & max) to decide on activity
+
+//  Save it
+//      There are 1 or more Tracks, each with 1 or more Runs
+//      There are 0 or more BadDataRuns - the points tossed out during analysis
+
+
+import Foundation
+import SwiftyXML
+
+if CommandLine.arguments.count != 3 {
+    print("Pass a two arguments, the name of a GPX file and the name of the output file")
+    exit(-1)
+}
+
+let filename = CommandLine.arguments[1]
+let outputName = CommandLine.arguments[2]
+print("Loading \(filename) and writing to \(outputName)")
+
+do {
+    let data = try Data(contentsOf: URL(fileURLWithPath: filename))
+    let xml = XML(data: data)
+
+    var gpxTracks = [GpxTrack]()
+    for track in xml!["trk"] {
+        var trackSegments = [GpxSegment]()
+        for segment in track["trkseg"] {
+            var segmentPoints = [GpxPoint]()
+            for point in segment["trkpt"] {
+                segmentPoints.append(GpxPoint(xml: point))
+            }
+            trackSegments.append(GpxSegment(points: segmentPoints))
+        }
+        gpxTracks.append(GpxTrack(segments: trackSegments))
+    }
+
+    let stats = GpxAnalyzer.generateStats(gpxTracks: gpxTracks)
+
+print("output:")
+    for t in stats.tracks {
+        print("track: \(t)")
+        print("  > there are \(t.runs.count) runs, \(t.stops.count) stops and \(t.discardedPoints.count) discarded points")
+        for r in t.runs {
+            if r.style == RunStyle.track {
+                let speed = r.kilometers / (r.seconds / 3600.0)
+                print("  >> \(r.points[0].gpx.time) \(Int(r.kilometers * 1000)), \(r.seconds): \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
+            }
+        }
+    }
+
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
+    let jsonData = try encoder.encode(stats)
+    let json = String(data: jsonData, encoding: .utf8)!
+    try json.write(to: URL(fileURLWithPath: outputName), atomically: false, encoding: .utf8)
+
+// let speeds = [0.0, 0.1]
+// for speedKmh in speeds {
+//     let x = TransportationAnalyzer.calculate(speedKmh: Double(speedKmh))
+//     print("\(speedKmh): \(x)")
+// }
+
+
+} catch {
+    print("ERROR: \(error)")
+}
