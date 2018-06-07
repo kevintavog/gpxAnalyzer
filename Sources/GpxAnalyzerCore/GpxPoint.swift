@@ -1,26 +1,26 @@
 import Foundation
 import SwiftyXML
 
-struct GpxPoint : Codable, CustomStringConvertible {
-    let latitude: Double
-    let longitude: Double
-    let elevation: Double
-    let time: Date
-    let course: Double
+public struct GpxPoint : Codable, CustomStringConvertible {
+    public let latitude: Double
+    public let longitude: Double
+    public let elevation: Double
+    public let time: Date
+    public let course: Double
 
     // Meters per second
-    let speed: Double
-    let speedKmH: Double
+    public let speed: Double
+    public let speedKmH: Double
 
-    let fix: String?
-    let hdop: Double?
-    let pdop: Double?
-    let vdop: Double?       // Vertical - it's ignored, but available for display in the UI
+    public let fix: String?
+    public let hdop: Double?
+    public let pdop: Double?
+    public let vdop: Double?       // Vertical - it's ignored, but available for display in the UI
 
     static private var dateTimeFormatter: DateFormatter?
 
 
-    init(xml: XML) {
+    public init(xml: XML) {
         if GpxPoint.dateTimeFormatter == nil {
             GpxPoint.dateTimeFormatter = DateFormatter()
             GpxPoint.dateTimeFormatter?.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -78,7 +78,7 @@ struct GpxPoint : Codable, CustomStringConvertible {
         return distance / (seconds(between: between) / 3600.0)
     }
 
-    var description: String {
+    public var description: String {
         return "\(latitude), \(longitude), speed: \(speed), \(elevation) meters, \(String(describing: fix)) @\(time)"
     }
 

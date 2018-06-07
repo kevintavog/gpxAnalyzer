@@ -9,7 +9,7 @@ import Foundation
 //      Car         13-30   46-108      29-67
 //      Train       56      201         125
 //      Plane       250     900         560
-enum TransportationType: String, Codable {
+public enum TransportationType: String, Codable {
     case unknown = "unknown"
     case foot = "foot"
     case bicycle = "bicycle"
@@ -18,9 +18,9 @@ enum TransportationType: String, Codable {
     case plane = "plane"
 }
 
-struct SpeedType: Codable {
-    let probability: Double
-    let transportation: TransportationType
+public struct SpeedType: Codable {
+    public let probability: Double
+    public let transportation: TransportationType
 
     init(probability: Double, transportation: TransportationType) {
         self.probability = probability
@@ -40,7 +40,7 @@ struct SpeedProfile {
     let transportation: TransportationType
 }
 
-class TransportationAnalyzer {
+public class TransportationAnalyzer {
 
     static private let speedProfiles = [
         SpeedProfile(absoluteMinimum: 0.0, nominalMinimum: 1.0, nominalMaximum: 6.4, absoluteMaximum: 7.4, transportation: .foot),
@@ -49,11 +49,11 @@ class TransportationAnalyzer {
         SpeedProfile(absoluteMinimum: 90.0, nominalMinimum: 100.0, nominalMaximum: 200.0, absoluteMaximum: 300.0, transportation: .train),
         SpeedProfile(absoluteMinimum: 100.0, nominalMinimum: 160.0, nominalMaximum: 800.0, absoluteMaximum: 1000.0, transportation: .plane)]
 
-    static func calculate(gpx: GpxPoint) -> [SpeedType] {
+    static public func calculate(gpx: GpxPoint) -> [SpeedType] {
         return TransportationAnalyzer.calculate(speedKmh: gpx.speedKmH)
     }
 
-    static func calculate(speedKmh: Double) -> [SpeedType] {
+    static public func calculate(speedKmh: Double) -> [SpeedType] {
         var speedTypes = [SpeedType]()
         for p in TransportationAnalyzer.speedProfiles {
             var probability: Double? = nil

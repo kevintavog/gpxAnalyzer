@@ -1,13 +1,13 @@
 import Foundation
 
-class StatsGpx : Codable {
-    let schemaVersion = 1
-    let tracks: [StatsTrack]
+public class StatsGpx : Codable {
+    public let schemaVersion = 1
+    public let tracks: [StatsTrack]
 
-    let minLat: Double
-    let minLon: Double
-    let maxLat: Double
-    let maxLon: Double
+    public let minLat: Double
+    public let minLon: Double
+    public let maxLat: Double
+    public let maxLon: Double
 
     init(tracks: [StatsTrack]) {
         self.tracks = tracks

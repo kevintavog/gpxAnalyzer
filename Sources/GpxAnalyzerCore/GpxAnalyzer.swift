@@ -25,7 +25,7 @@ import Foundation
 //          Use max speed, or max relative speed (multiplier between average & max) to decide
 
 
-class GpxAnalyzer {
+public class GpxAnalyzer {
     static let weighted = [0.4, 0.2, 0.4]
 
     // Below 1-2 km/h, we're going to consider it highly likely the trace is at a stop point
@@ -37,7 +37,7 @@ class GpxAnalyzer {
     var _discardedPoints = [StatsDiscardedPoint]()
 
 
-    static func generateStats(gpxTracks: [GpxTrack]) -> StatsGpx {
+    static public func generateStats(gpxTracks: [GpxTrack]) -> StatsGpx {
 
         let analyzer = GpxAnalyzer()
         var tracks = [StatsTrack]()

@@ -1,24 +1,24 @@
 import Foundation
 
-enum RunStyle: String, Codable {
+public enum RunStyle: String, Codable {
     case track = "track"
     case virtual = "virtual"
 }
 
-class StatsRun : Codable, CustomStringConvertible {
+public class StatsRun : Codable, CustomStringConvertible {
     static private var dateFormatter: DateFormatter?
 
-    let style: RunStyle
-    var speedTypes: [SpeedType] = [SpeedType]()
-    var points: [StatsPoint]
-    var minLat: Double = 0.0
-    var minLon: Double = 0.0
-    var maxLat: Double = 0.0
-    var maxLon: Double = 0.0
-    var kilometers: Double = 0.0
-    var seconds: Double = 0.0
-    var trackOffsetSeconds: Double = 0.0
-    var trackOffsetKilometers: Double = 0.0
+    public let style: RunStyle
+    public var speedTypes: [SpeedType] = [SpeedType]()
+    public var points: [StatsPoint]
+    public var minLat: Double = 0.0
+    public var minLon: Double = 0.0
+    public var maxLat: Double = 0.0
+    public var maxLon: Double = 0.0
+    public var kilometers: Double = 0.0
+    public var seconds: Double = 0.0
+    public var trackOffsetSeconds: Double = 0.0
+    public var trackOffsetKilometers: Double = 0.0
 
     init(style: RunStyle) {
         if StatsRun.dateFormatter == nil {
@@ -52,7 +52,7 @@ class StatsRun : Codable, CustomStringConvertible {
         points.append(StatsPoint(gpx: gpx, kilometersIntoRun: kilometers, secondsIntoRun: seconds, kilometersFromLast: kmFromLast))
     }
 
-    var description: String {
+    public var description: String {
         let startTime = StatsRun.dateFormatter!.string(from: points.last!.gpx.time)
         return "\(style): \(points.count) points, from \(startTime) for \(seconds) seconds and \(Int(kilometers * 1000.0)) meters"
     }

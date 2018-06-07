@@ -22,6 +22,7 @@
 
 import Foundation
 import SwiftyXML
+import GpxAnalyzerCore
 
 if CommandLine.arguments.count != 3 {
     print("Pass a two arguments, the name of a GPX file and the name of the output file")
@@ -68,13 +69,6 @@ print("output:")
     let jsonData = try encoder.encode(stats)
     let json = String(data: jsonData, encoding: .utf8)!
     try json.write(to: URL(fileURLWithPath: outputName), atomically: false, encoding: .utf8)
-
-// let speeds = [0.0, 0.1]
-// for speedKmh in speeds {
-//     let x = TransportationAnalyzer.calculate(speedKmh: Double(speedKmh))
-//     print("\(speedKmh): \(x)")
-// }
-
 
 } catch {
     print("ERROR: \(error)")

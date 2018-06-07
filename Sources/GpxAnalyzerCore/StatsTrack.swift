@@ -1,19 +1,19 @@
 import Foundation
 
-class StatsTrack : Codable, CustomStringConvertible {
-    let runs: [StatsRun]
-    let stops: [StatsStop]
-    let discardedPoints: [StatsDiscardedPoint]
+public class StatsTrack : Codable, CustomStringConvertible {
+    public let runs: [StatsRun]
+    public let stops: [StatsStop]
+    public let discardedPoints: [StatsDiscardedPoint]
 
-    let kilometers: Double
-    let seconds: Double
-    let averageSpeed: Double
-    let minLat: Double
-    let minLon: Double
-    let maxLat: Double
-    let maxLon: Double
+    public let kilometers: Double
+    public let seconds: Double
+    public let averageSpeed: Double
+    public let minLat: Double
+    public let minLon: Double
+    public let maxLat: Double
+    public let maxLon: Double
 
-    var description: String {
+    public var description: String {
         return "\(Int(kilometers * 1000)) meters in \(seconds) seconds, \(averageSpeed) km/h on average"
     }
 

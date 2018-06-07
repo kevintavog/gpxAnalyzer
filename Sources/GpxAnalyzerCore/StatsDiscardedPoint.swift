@@ -1,11 +1,11 @@
 import Foundation
 
-enum DiscardedReason: String, Codable {
+public enum DiscardedReason: String, Codable {
     case poorDop = "poorDop"
     case badFix = "badFix"
 }
 
-class StatsDiscardedPoint : Codable {
+public class StatsDiscardedPoint : Codable {
     let gpx: GpxPoint
     let reason: DiscardedReason
 

@@ -1,16 +1,16 @@
 import Foundation
 
-class StatsPoint : Codable, CustomStringConvertible {
-    let gpx: GpxPoint
+public class StatsPoint : Codable, CustomStringConvertible {
+    public let gpx: GpxPoint
 
-    let kilometersFromLast: Double
-    let kilometersIntoRun: Double
-    let secondsIntoRun: Double
-    var smoothedSpeed: Double = 0.0
-    var speedTypes: [SpeedType] = [SpeedType]()
+    public let kilometersFromLast: Double
+    public let kilometersIntoRun: Double
+    public let secondsIntoRun: Double
+    public var smoothedSpeed: Double = 0.0
+    public var speedTypes: [SpeedType] = [SpeedType]()
 
 
-    var description: String {
+    public var description: String {
         return "distance: \(kilometersIntoRun), time: \(secondsIntoRun), gpx: \(gpx);"
     }
 

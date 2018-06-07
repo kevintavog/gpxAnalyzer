@@ -1,9 +1,9 @@
 import Foundation
 
-struct GpxTrack : Codable {
+public struct GpxTrack : Codable {
     let segments: [GpxSegment]
 
-    init(segments: [GpxSegment]) {
+    public init(segments: [GpxSegment]) {
         self.segments = segments
     }
 }

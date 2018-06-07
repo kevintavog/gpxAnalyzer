@@ -1,12 +1,12 @@
 import Foundation
 
-enum StatsStopStyle: String, Codable {
+public enum StatsStopStyle: String, Codable {
     case paused = "paused"
     case stopped = "stopped"
 }
 
 
-class StatsStop : Codable, CustomStringConvertible {
+public class StatsStop : Codable, CustomStringConvertible {
     let style: StatsStopStyle
     let latitude: Double
     let longitude: Double
@@ -25,7 +25,7 @@ class StatsStop : Codable, CustomStringConvertible {
         self.longitude = points.reduce(0.0, { $0 + $1.longitude }) / Double(points.count)
     }
 
-    var description: String {
+    public var description: String {
         return "\(style) @\(latitude), \(longitude), for \(durationSeconds) seconds, starting at \(startTime)"
     }
 }
