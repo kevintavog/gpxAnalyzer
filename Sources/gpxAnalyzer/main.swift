@@ -57,10 +57,12 @@ print("output:")
         print("track: \(t)")
         print("  > there are \(t.runs.count) runs, \(t.stops.count) stops and \(t.discardedPoints.count) discarded points")
         for r in t.runs {
-            if r.style == RunStyle.track {
-                let speed = r.kilometers / (r.seconds / 3600.0)
-                print("  >> \(r.points[0].gpx.time) \(Int(r.kilometers * 1000)), \(r.seconds): \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
-            }
+            let speed = r.kilometers / (r.seconds / 3600.0)
+            print("  >> [\(r.style)] run \(r.points[0].gpx.time) km: \(r.kilometers), seconds: \(r.seconds): \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
+        }
+
+        for s in t.stops {
+            print("  >> [\(s.style) \(s.startTime) to \(s.endTime) for \(Int(s.durationSeconds))")
         }
     }
 

@@ -4,7 +4,11 @@ import XCTest
 
 class TransportationAnalyzerTests : XCTestCase {
     func testSpeedCalculation() {
-        let speedAndExpected = [0.0: [SpeedType(probability: 0.01, transportation: .foot)]]
+        let speedAndExpected = [
+            0.0: [SpeedType(probability: 0.01, transportation: .foot)],
+            6.0: [SpeedType(probability: 1.0, transportation: .foot)],
+            12.0: [SpeedType(probability: 1.0, transportation: .bicycle)],
+        ]
         for (speed,expected) in speedAndExpected {
             let actual = TransportationAnalyzer.calculate(speedKmh: speed)
             compare(expected, actual)

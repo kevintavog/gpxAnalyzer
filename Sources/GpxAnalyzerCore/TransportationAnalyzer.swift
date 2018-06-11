@@ -53,6 +53,10 @@ public class TransportationAnalyzer {
         return TransportationAnalyzer.calculate(speedKmh: gpx.speedKmH)
     }
 
+    static public func calculate(point: StatsPoint) -> [SpeedType] {
+        return TransportationAnalyzer.calculate(speedKmh: point.smoothedSpeedKmH)
+    }
+
     static public func calculate(speedKmh: Double) -> [SpeedType] {
         var speedTypes = [SpeedType]()
         for p in TransportationAnalyzer.speedProfiles {

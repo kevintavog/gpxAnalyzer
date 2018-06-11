@@ -53,7 +53,7 @@ public struct GpxPoint : Codable, CustomStringConvertible {
     // Use the small distance calculation (Pythagorus' theorem)
     // See the 'Equirectangular approximation' section of http://www.movable-type.co.uk/scripts/latlong.html
     // The distance returned is in kilometers
-    func distance(to: GpxPoint) -> Double {
+    public func distance(to: GpxPoint) -> Double {
         let rLat1 = self.latitude * Double.pi / 180
         let rLon1 = self.longitude * Double.pi / 180
         let rLat2 = to.latitude * Double.pi / 180
@@ -65,21 +65,29 @@ public struct GpxPoint : Codable, CustomStringConvertible {
     }
 
     // Number of seconds between two points, independent of which is earlier
-    func seconds(between: GpxPoint) -> Double {
+    public func seconds(between: GpxPoint) -> Double {
         return abs(self.time.timeIntervalSince(between.time))
     }
 
     // Return the speed, in kilometers / hour, between two points
-    func speed(between: GpxPoint) -> Double {
+    public func speed(between: GpxPoint) -> Double {
         return speed(between: between, distance: distance(to: between))
     }
 
-    func speed(between: GpxPoint, distance: Double) -> Double {
-        return distance / (seconds(between: between) / 3600.0)
+    public func speed(between: GpxPoint, distance: Double) -> Double {
+        return speed(seconds: seconds(between: between), distance: distance)
+    }
+
+    public func speed(seconds: Double, distance: Double) -> Double {
+        let time = (seconds / 3600.0)
+        if time < 0.000001 {
+            return 0.0
+        }
+        return distance / time
     }
 
     public var description: String {
-        return "\(latitude), \(longitude), speed: \(speed), \(elevation) meters, \(String(describing: fix)) @\(time)"
+        return "\(latitude), \(longitude), speed: \(speed), @\(time)"
     }
 
     var dms: String {

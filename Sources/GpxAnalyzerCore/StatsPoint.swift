@@ -6,7 +6,7 @@ public class StatsPoint : Codable, CustomStringConvertible {
     public let kilometersFromLast: Double
     public let kilometersIntoRun: Double
     public let secondsIntoRun: Double
-    public var smoothedSpeed: Double = 0.0
+    public var smoothedSpeedKmH: Double = 0.0
     public var speedTypes: [SpeedType] = [SpeedType]()
 
 

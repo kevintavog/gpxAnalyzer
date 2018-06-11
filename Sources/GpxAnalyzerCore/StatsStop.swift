@@ -7,12 +7,12 @@ public enum StatsStopStyle: String, Codable {
 
 
 public class StatsStop : Codable, CustomStringConvertible {
-    let style: StatsStopStyle
-    let latitude: Double
-    let longitude: Double
-    let startTime: Date
-    let endTime: Date
-    let durationSeconds: Double
+    public let style: StatsStopStyle
+    public let latitude: Double
+    public let longitude: Double
+    public let startTime: Date
+    public let endTime: Date
+    public let durationSeconds: Double
 
     init(style: StatsStopStyle, points: [GpxPoint]) {
         self.style = style
@@ -23,6 +23,15 @@ public class StatsStop : Codable, CustomStringConvertible {
         // Calculate a center point
         self.latitude = points.reduce(0.0, { $0 + $1.latitude }) / Double(points.count)
         self.longitude = points.reduce(0.0, { $0 + $1.longitude }) / Double(points.count)
+    }
+
+    init(first: StatsStop, second: StatsStop) {
+        self.style = first.style            // Style may change (it's based on duration)
+        self.startTime = first.startTime
+        self.endTime = second.endTime
+        self.durationSeconds = abs(first.startTime.timeIntervalSince(second.endTime))
+        self.latitude = first.latitude      // It'd be better to average these
+        self.longitude = first.longitude
     }
 
     public var description: String {

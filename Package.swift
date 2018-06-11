@@ -6,10 +6,13 @@ let package = Package(
     name: "gpxAnalyzer",
     products: [
         .executable(name: "gpxAnalyzer", targets: ["gpxAnalyzer"]),
-        .library(name: "GpxAnalyzerCore", targets: ["GpxAnalyzerCore"])
+        .executable(name: "gpxFilter", targets: ["gpxFilter"]),
+        .library(name: "GpxAnalyzerCore", targets: ["GpxAnalyzerCore"]),
+        .library(name: "GpxFilterCore", targets: ["GpxFilterCore"]),
     ],
     dependencies: [
          .package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", from: "1.6.0"),
+         .package(url: "https://github.com/apple/swift-package-manager.git", from: "0.2.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -23,5 +26,11 @@ let package = Package(
         .testTarget(
             name: "gpxAnalyzerTests",
             dependencies: ["GpxAnalyzerCore"]),
+        .target(
+            name: "gpxFilter",
+            dependencies: ["GpxAnalyzerCore", "GpxFilterCore", "SwiftyXML", "Utility"]),
+        .target(
+            name: "GpxFilterCore",
+            dependencies: ["SwiftyXML", "Utility"]),
     ]
 )
