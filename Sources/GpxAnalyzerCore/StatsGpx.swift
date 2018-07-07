@@ -3,14 +3,16 @@ import Foundation
 public class StatsGpx : Codable {
     public let schemaVersion = 1
     public let tracks: [StatsTrack]
+    public let original: [GpxPoint]
 
     public let minLat: Double
     public let minLon: Double
     public let maxLat: Double
     public let maxLon: Double
 
-    init(tracks: [StatsTrack]) {
+    init(tracks: [StatsTrack], original: [GpxPoint]) {
         self.tracks = tracks
+        self.original = original
 
         var minimumLat = 180.0, minimumLon = 180.0
         var maximumLat = 0.0, maximumLon = -180.0

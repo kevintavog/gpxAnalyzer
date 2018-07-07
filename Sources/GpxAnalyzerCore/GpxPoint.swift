@@ -15,7 +15,7 @@ public struct GpxPoint : Codable, CustomStringConvertible {
     public let fix: String?
     public let hdop: Double?
     public let pdop: Double?
-    public let vdop: Double?       // Vertical - it's ignored, but available for display in the UI
+    public let vdop: Double?       // Vertical - it's ignored when analyzing, but available for display in the UI
 
     static private var dateTimeFormatter: DateFormatter?
 
@@ -47,21 +47,12 @@ public struct GpxPoint : Codable, CustomStringConvertible {
     }
 
     var hasGoodDOP: Bool {
-        return (hdop ?? 0.0) < 2.5 && (pdop ?? 0) < 2.5
+        return (hdop ?? 0.0) <= 3.0 && (pdop ?? 0) <= 3.0
     }
 
-    // Use the small distance calculation (Pythagorus' theorem)
-    // See the 'Equirectangular approximation' section of http://www.movable-type.co.uk/scripts/latlong.html
     // The distance returned is in kilometers
     public func distance(to: GpxPoint) -> Double {
-        let rLat1 = self.latitude * Double.pi / 180
-        let rLon1 = self.longitude * Double.pi / 180
-        let rLat2 = to.latitude * Double.pi / 180
-        let rLon2 = to.longitude * Double.pi / 180
-
-        let x = (rLon2 - rLon1) * cos((rLat1 + rLat2) / 2)
-        let y = rLat2 - rLat1
-        return sqrt((x * x) + (y * y)) * 6371.3 // radius of earth in kilometers
+        return Geo.distance(lat1: self.latitude, lon1: self.longitude, lat2: to.latitude, lon2: to.longitude)
     }
 
     // Number of seconds between two points, independent of which is earlier
