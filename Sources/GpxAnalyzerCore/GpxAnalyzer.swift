@@ -31,6 +31,7 @@ public class GpxAnalyzer {
     // Below a certain speed, we're going to consider it highly likely the trace is at a stop point
     static let minimumMovingAverageSpeedMetersSecond = Converter.kilometersPerHourToMetersPerSecond(kmh: 0.1)
     static let minimumStopDurationSeconds = 8 * 60.0
+    static let maximumTimeBetweenConsolidatedStops = 1 * 60 * 60.0
 
     var _runs = [StatsRun]()
     var _stops = [StatsStop]()
@@ -68,30 +69,64 @@ else {
         return tracks
     }
 
+    public func stopToRectangle(_ stop: StatsStop) -> GeoRectangle {
+        return GeoRectangle(minLat: stop.minLat, minLon: stop.minLon, maxLat: stop.maxLat, maxLon: stop.maxLon)
+    }
+
     private func consolidateStops(_ stops: [StatsStop], _ runs: [StatsRun]) -> [StatsStop] {
-        var response = [StatsStop]()
-        if stops.count < 1 {
-            return response
+        if stops.count <= 1 {
+            return stops
         }
 
-        for idx in 1..<stops.count {
-            let thisStop = stops[idx]
-            let lastStop = response.last ?? stops[idx - 1]
-            let diffSeconds = abs(thisStop.startTime.timeIntervalSince(lastStop.endTime))
-            let intermediateRuns = findIntermediateRuns(runs, lastStop.endTime, thisStop.startTime)
-// print("last stop ends @\(lastStop.endTime); \(diffSeconds) and next starts @\(thisStop.startTime), \(intermediateRuns)")
+        var statsCopy = stops
+        var combined = false
+        var response = [StatsStop]()
+        var currentIdx = statsCopy.count - 1
+        while currentIdx >= 0 {
+            var current = statsCopy[currentIdx]
+            var otherIdx = currentIdx - 1
 
-            if intermediateRuns.count == 0 {
-                if response.count > 0 {
-                    response.removeLast()
+// print("Comparing \(currentIdx) to [\(otherIdx) - 0] (\(current.startTime); \(current.durationSeconds))")
+            while otherIdx >= 0 {
+                let other = statsCopy[otherIdx]
+                let includedInTime = current.startTime < other.startTime && current.endTime > other.endTime ||
+                    other.startTime < current.startTime && other.endTime > current.endTime
+
+                if includedInTime || Geo.within(meters: 5.0, first: stopToRectangle(current), second: stopToRectangle(other)) {
+                    let secondsBetween = min(
+                        abs(current.startTime.timeIntervalSince(other.endTime)), 
+                        abs(other.startTime.timeIntervalSince(current.endTime)))
+
+                    if secondsBetween < GpxAnalyzer.maximumTimeBetweenConsolidatedStops {
+                        current = StatsStop(first: current, second: other)
+                        combined = true
+                        statsCopy.remove(at: otherIdx)
+                    }
+else {
+    print("seconds between too long: \(secondsBetween)")
+}
                 }
-                response.append(StatsStop(first: lastStop, second: thisStop))
-            } else {
-                if idx == 1 {
-                    response.append(lastStop)
-                }
-                response.append(thisStop)
+                otherIdx -= 1
             }
+
+// print(" --> adding \(current.startTime); \(current.durationSeconds)")
+            response.append(current)
+            if currentIdx == 0 {
+                break
+            }
+
+            if statsCopy.count > 0 {
+                statsCopy.remove(at: statsCopy.count - 1)
+            }
+            while currentIdx >= statsCopy.count {
+                currentIdx -= 1
+            }
+        }
+
+// print("combined: \(combined); result: \(response.count), initial: \(stops.count)")
+
+        if combined {
+            return consolidateStops(response, runs)
         }
 
         return response

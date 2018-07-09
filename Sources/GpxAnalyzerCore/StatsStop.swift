@@ -19,6 +19,7 @@ public class StatsStop : Codable, CustomStringConvertible {
     public var maxLon: Double
     public var distance: Double
 
+
     init(style: StatsStopStyle, points: [GpxPoint]) {
         self.style = style
         self.startTime = points[0].time
@@ -48,10 +49,10 @@ public class StatsStop : Codable, CustomStringConvertible {
     }
 
     public init(first: StatsStop, second: StatsStop) {
-        self.style = first.style            // Style may change (it's based on duration)
-        self.startTime = first.startTime
-        self.endTime = second.endTime
-        self.durationSeconds = abs(first.startTime.timeIntervalSince(second.endTime))
+        self.startTime = min(first.startTime, second.startTime)
+        self.endTime = max(first.endTime, second.endTime)
+        self.durationSeconds = abs(startTime.timeIntervalSince(endTime))
+        self.style = self.durationSeconds < GpxAnalyzer.minimumStopDurationSeconds ? StatsStopStyle.paused : StatsStopStyle.stopped
 
         self.minLat = min(first.minLat, second.minLat)
         self.maxLat = max(first.maxLat, second.maxLat)

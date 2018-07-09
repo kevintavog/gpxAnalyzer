@@ -24,6 +24,7 @@ import Foundation
 import SwiftyXML
 import GpxAnalyzerCore
 
+
 if CommandLine.arguments.count != 3 {
     print("Pass a two arguments, the name of a GPX file and the name of the output file")
     exit(-1)
@@ -54,15 +55,25 @@ do {
 
 print("output:")
     for t in stats.tracks {
-        print("track: \(t)")
-        print("  > there are \(t.runs.count) runs, \(t.stops.count) stops and \(t.discardedPoints.count) discarded points")
-        for r in t.runs {
-            let speed = r.kilometers / (r.seconds / 3600.0)
-            print("  >> [\(r.style)] run \(r.points[0].gpx.time) km: \(r.kilometers), seconds: \(r.seconds): \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
+        var lat = 0.0
+        var lon = 0.0
+        if t.runs.count > 0 {
+            lat = t.runs[0].points[0].gpx.latitude
+            lon = t.runs[0].points[0].gpx.longitude
         }
 
+        print("track: \(t) (\(lat),\(lon))")
+        print("  > there are \(t.runs.count) runs, \(t.stops.count) stops and \(t.discardedPoints.count) discarded points")
+        // for r in t.runs {
+        //     let speed = r.kilometers / (r.seconds / 3600.0)
+        //     print("  >> [\(r.style)] run \(r.points[0].gpx.time) \(r.kilometers) km in \(r.seconds) secs: \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
+        // }
+
+        var prevStop: StatsStop?
+        var combinedStop: StatsStop?
         for s in t.stops {
             print("  >> [\(s.style) \(s.startTime) to \(s.endTime) for \(Int(s.durationSeconds))")
+            prevStop = s
         }
     }
 
