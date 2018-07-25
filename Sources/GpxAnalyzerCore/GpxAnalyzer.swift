@@ -39,7 +39,6 @@ public class GpxAnalyzer {
 
 
     static public func generateStats(gpxTracks: [GpxTrack]) -> StatsGpx {
-
         let analyzer = GpxAnalyzer()
         var tracks = [StatsTrack]()
         var original = [GpxPoint]()
@@ -401,7 +400,6 @@ if ptCat == .stopped {
 
     func findLastBad(_ points: [GpxPoint], _ lastGoodIndex: Int, _ firstBadIndex: Int) -> Int {
         let lastGood = points[lastGoodIndex]
-        let firstBad = points[firstBadIndex]
         let end = min(firstBadIndex + 40, points.count - 1)
         for index in firstBadIndex...end {
             let p = points[index]

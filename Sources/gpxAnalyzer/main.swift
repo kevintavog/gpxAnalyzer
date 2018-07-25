@@ -26,7 +26,7 @@ import GpxAnalyzerCore
 
 
 if CommandLine.arguments.count != 3 {
-    print("Pass a two arguments, the name of a GPX file and the name of the output file")
+    print("Pass two arguments, the name of a GPX file and the name of the output file")
     exit(-1)
 }
 
@@ -69,11 +69,8 @@ print("output:")
         //     print("  >> [\(r.style)] run \(r.points[0].gpx.time) \(r.kilometers) km in \(r.seconds) secs: \(speed) --> \(Int(r.speedTypes[0].probability * 100))% \(r.speedTypes[0].transportation)")
         // }
 
-        var prevStop: StatsStop?
-        var combinedStop: StatsStop?
         for s in t.stops {
             print("  >> [\(s.style) \(s.startTime) to \(s.endTime) for \(Int(s.durationSeconds))")
-            prevStop = s
         }
     }
 

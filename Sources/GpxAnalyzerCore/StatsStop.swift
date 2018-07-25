@@ -30,7 +30,6 @@ public class StatsStop : Codable, CustomStringConvertible {
         var maxLatitude = points[0].latitude
         var minLongitude = points[0].longitude
         var maxLongitude = points[0].longitude
-        var prevPoint = points[0]
         for p in points {
             minLatitude = min(p.latitude, minLatitude)
             maxLatitude = max(p.latitude, maxLatitude)

@@ -55,6 +55,11 @@ public struct GpxPoint : Codable, CustomStringConvertible {
         return Geo.distance(lat1: self.latitude, lon1: self.longitude, lat2: to.latitude, lon2: to.longitude)
     }
 
+    // The bearing is returned in degrees
+    public func bearing(to: GpxPoint) -> Int {
+        return Geo.bearing(lat1: self.latitude, lon1: self.longitude, lat2: to.latitude, lon2: to.longitude)
+    }
+
     // Number of seconds between two points, independent of which is earlier
     public func seconds(between: GpxPoint) -> Double {
         return abs(self.time.timeIntervalSince(between.time))
