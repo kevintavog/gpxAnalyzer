@@ -19,6 +19,7 @@ public class StatsRun : Codable, CustomStringConvertible {
     public var seconds: Double = 0.0
     public var trackOffsetSeconds: Double = 0.0
     public var trackOffsetKilometers: Double = 0.0
+    public var timezoneInfo = TimezoneInfo(id: "", tag: "")
 
     init(style: RunStyle) {
         if StatsRun.dateFormatter == nil {
