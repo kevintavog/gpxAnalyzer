@@ -191,6 +191,11 @@ else {
             }
         }
 
+for r in runs {
+    let vectors = VectorAnalyzer.calculate(run: r)
+    r.vectors = vectors
+}
+
         return runs
     }
 
