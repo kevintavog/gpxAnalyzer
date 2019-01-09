@@ -75,11 +75,7 @@ public struct GpxPoint : Codable, CustomStringConvertible {
     }
 
     public func speed(seconds: Double, distance: Double) -> Double {
-        let time = (seconds / 3600.0)
-        if time < 0.000001 {
-            return 0.0
-        }
-        return distance / time
+        return Converter.speedKph(seconds: seconds, kilometers: distance)
     }
 
     public var description: String {

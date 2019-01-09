@@ -1,23 +1,40 @@
 import Foundation
 
+public enum StatsPointCategory: String, Codable {
+    case poorQuality = "poorQuality"
+    case moving = "moving"
+    case stopped = "stopped"
+}
+
 public class StatsPoint : Codable, CustomStringConvertible {
     public let gpx: GpxPoint
 
-    public let calculatedBearing: Int
-    public let kilometersFromLast: Double
-    public let kilometersIntoRun: Double
-    public let secondsIntoRun: Double
+    public var averageGpxSpeed: Double?
+    public var calculatedSpeed: Double?
+    public var bearing: Int
+    public var kilometersFromLast: Double?
+    public var kilometersIntoRun: Double?
+    public var secondsIntoRun: Double?
     public var smoothedSpeedKmH: Double = 0.0
+    public var category: StatsPointCategory?
     public var speedTypes: [SpeedType] = [SpeedType]()
 
 
     public var description: String {
-        return "distance: \(kilometersIntoRun), time: \(secondsIntoRun), bearing: \(calculatedBearing), gpx: \(gpx);"
+        return "distance: \(String(describing: kilometersIntoRun)), time: \(String(describing: secondsIntoRun)), bearing: \(bearing), gpx: \(gpx);"
     }
 
-    init(gpx: GpxPoint, calculatedBearing: Int, kilometersIntoRun: Double, secondsIntoRun: Double, kilometersFromLast: Double) {
+    init(_ gpx: GpxPoint, _ category: StatsPointCategory, _ bearing: Int, _ averageGpxSpeed: Double?, _ calculatedSpeed: Double?) {
         self.gpx = gpx
-        self.calculatedBearing = calculatedBearing
+        self.category = category
+        self.bearing = bearing
+        self.averageGpxSpeed = averageGpxSpeed
+        self.calculatedSpeed = calculatedSpeed
+    }
+
+    init(gpx: GpxPoint, bearing: Int, kilometersIntoRun: Double, secondsIntoRun: Double, kilometersFromLast: Double) {
+        self.gpx = gpx
+        self.bearing = bearing
         self.kilometersIntoRun = kilometersIntoRun
         self.secondsIntoRun = secondsIntoRun
         self.kilometersFromLast = kilometersFromLast

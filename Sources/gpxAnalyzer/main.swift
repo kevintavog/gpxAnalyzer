@@ -60,6 +60,11 @@ class AnalyzeCommand: Command {
                 gpxTracks.append(GpxTrack(segments: trackSegments))
             }
 
+            if gpxTracks.count == 0 || gpxTracks[0].segments.count == 0 || gpxTracks[0].segments[0].points.count == 0 {
+                print("There are no GPX points to work with")
+                return
+            }
+
             if let svr = timezoneLookupServer.value {
                 LookupTimezone.timezoneLookupServer = svr
             }

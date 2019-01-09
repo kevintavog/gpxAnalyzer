@@ -29,7 +29,7 @@ public class GpxAnalyzer {
     static let weighted = [0.4, 0.2, 0.4]
 
     // Below a certain speed, we're going to consider it highly likely the trace is at a stop point
-    static let minimumMovingAverageSpeedMetersSecond = Converter.kilometersPerHourToMetersPerSecond(kmh: 0.1)
+    static let minimumMovingAverageSpeedMetersSecond = Converter.kilometersPerHourToMetersPerSecond(kmh: 0.05)
     static let minimumStopDurationSeconds = 8 * 60.0
     static let maximumTimeBetweenConsolidatedStops = 1 * 60 * 60.0
 
@@ -42,14 +42,17 @@ public class GpxAnalyzer {
         let analyzer = GpxAnalyzer()
         var tracks = [StatsTrack]()
         var original = [GpxPoint]()
+        var filtered = [GpxPoint]()
         for t in gpxTracks {
             for s in t.segments {
-                tracks.append(contentsOf: analyzer.createTracks(s.points))
+                let (stats, f) = analyzer.createTracks(s.points)
+                tracks.append(contentsOf: stats)
                 original += s.points
+                filtered += f
             }
         }
 
-        return StatsGpx(tracks: analyzer.finalizeTracks(tracks), original: original)
+        return StatsGpx(tracks: analyzer.finalizeTracks(tracks), original: original, filtered: filtered)
     }
 
     private func finalizeTracks(_ input: [StatsTrack]) -> [StatsTrack] {
@@ -58,7 +61,7 @@ public class GpxAnalyzer {
             let runs = consolidateRuns(t.runs)
             let stops = consolidateStops(t.stops, runs)
             if runs.count > 0 || stops.count > 0 {
-                tracks.append(StatsTrack(runs: runs, stops: stops, discardedPoints: t.discardedPoints))
+                tracks.append(StatsTrack(runs: runs, stops: stops, discardedPoints: t.discardedPoints, vectors: t.vectors))
             }
 else {
     print("Removed track \(t)")
@@ -191,11 +194,6 @@ else {
             }
         }
 
-for r in runs {
-    let vectors = VectorAnalyzer.calculate(run: r)
-    r.vectors = vectors
-}
-
         return runs
     }
 
@@ -225,15 +223,22 @@ for r in runs {
 // print("100: \(prob100) -- \(speeds)")
     }
 
-    private func createTracks(_ points: [GpxPoint]) -> [StatsTrack] {
-        // The first pass will mark each point as:
+    private func createTracks(_ points: [GpxPoint]) -> ([StatsTrack], [GpxPoint]) {
+        // Get rid of duplicate points
+        // let filteredNearbyPoints = RemoveNearbyPoints.process(points)
+        let filteredNearbyPoints = points
+
+        // Categorize points
         //  a) Poor quality (DOP or Fix)
         //  b) Moving
         //  c) Stopped
-        let categorizedPoints = categorizePoints(points)
+        let categorizedPoints = CategorizePoints.process(filteredNearbyPoints)
 
+        // Calculate vectors & remove noisy points
+        let vectors = VectorAnalyzer.calculate(points: categorizedPoints)
+        let cleanedCategorizedPoints = RemoveNoisyPoints.process(vectors)
 
-        // The second pass will group points into
+        // Group remaining points
         //  a) Discarded
         //  b) Runs (track, pause, virtual)
         //  c) Stops
@@ -242,9 +247,9 @@ for r in runs {
         _discardedPoints = [StatsDiscardedPoint]()
         var tracks = [StatsTrack]()
 
-        var group = [PointInfo]()
-        for pt in categorizedPoints {
-            if pt.category == PointCategory.poorQuality {
+        var group = [StatsPoint]()
+        for pt in cleanedCategorizedPoints {
+            if pt.category == StatsPointCategory.poorQuality {
                 _discardedPoints.append(StatsDiscardedPoint(gpx: pt.gpx))
                 continue
             }
@@ -265,25 +270,25 @@ for r in runs {
 
         processGroup(group)
 // print("end of track, stops: \(_stops)")
-        tracks.append(StatsTrack(runs: _runs, stops: _stops, discardedPoints: _discardedPoints))
-        return tracks
+        tracks.append(StatsTrack(runs: _runs, stops: _stops, discardedPoints: _discardedPoints, vectors: vectors))
+        return (tracks, filteredNearbyPoints)
     }
 
-    private func processGroup(_ group: [PointInfo]) {
+    private func processGroup(_ group: [StatsPoint]) {
         if group.count > 0 {
 // print("processing \(group[0].category)")
-            switch group[0].category {
-                case PointCategory.moving:
+            switch group[0].category! {
+                case StatsPointCategory.moving:
                     processRunGroup(group)
-                case PointCategory.stopped:
+                case StatsPointCategory.stopped:
                     processStoppedGroup(group)
-                case PointCategory.poorQuality:
+                case StatsPointCategory.poorQuality:
                     print("PoorQuality points should HAVE been filtered out already: \(group.count)")
             }
         }        
     }
 
-    private func processRunGroup(_ group: [PointInfo]) {
+    private func processRunGroup(_ group: [StatsPoint]) {
         var statsRun = StatsRun(style: RunStyle.track)
         var prev = group[0]
         for index in 0..<group.count {
@@ -306,7 +311,7 @@ for r in runs {
         _runs.append(statsRun)
     }
 
-    private func processStoppedGroup(_ group: [PointInfo]) {
+    private func processStoppedGroup(_ group: [StatsPoint]) {
         let duration = group[0].gpx.seconds(between: group[group.count - 1].gpx)
         if duration <= 15.0 {
             if let lastRun = _runs.last {
@@ -322,99 +327,6 @@ for r in runs {
 
         let stopStyle = duration < GpxAnalyzer.minimumStopDurationSeconds ? StatsStopStyle.paused : StatsStopStyle.stopped
         _stops.append(StatsStop(style: stopStyle, points: group.map { $0.gpx }) )
-    }
-
-    private func categorizePoints(_ points: [GpxPoint]) -> [PointInfo] {
-        var category = [PointInfo]()
-        if points.count < 1 {
-            return category
-        }
-
-        var lastBadIndex: Int? = nil
-        var idx = 0
-        while idx < points.count {
-            let p = points[idx]
-            var ptCat = PointCategory.poorQuality
-            var avgGpxSpeed:Double? = nil
-            var calculatedSpeed:Double? = nil
-            if p.hasGoodDOP && p.hasGoodGPSFix {
-                (avgGpxSpeed, calculatedSpeed) = recentAverageSpeeds(points, idx, 5)
-                if let avgGpxSpeed = avgGpxSpeed, let calculatedSpeed = calculatedSpeed {
-                    ptCat = avgGpxSpeed >= 
-                        GpxAnalyzer.minimumMovingAverageSpeedMetersSecond || calculatedSpeed >= GpxAnalyzer.minimumMovingAverageSpeedMetersSecond
-                        ? .moving : .stopped
-/*
-if ptCat == .stopped {
-    let ptCalcCat = calculatedSpeed >= GpxAnalyzer.minimumMovingAverageSpeedMetersSecond ? PointCategory.moving : PointCategory.stopped
-    var prevDist = 0.0
-    var prevTime = 0.0
-    var prevSpeed = 0.0
-    if idx > 0 {
-        prevDist = p.distance(to: points[idx - 1]) * 1000.0
-        prevTime = p.seconds(between: points[idx - 1])
-        prevSpeed = p.speed(between: points[idx - 1])
-    }
-    let calcMetersPerSecond = Converter.kilometersPerHourToMetersPerSecond(kmh: calculatedSpeed)
-    print("stop point: \(p.time) [\(ptCalcCat)], \(p.speedKmH) k/h, avg: \(avgGpxSpeed) [\(calcMetersPerSecond)] m/s (\(prevDist) meters, \(prevSpeed) k/h)")
-    if prevTime > 1.0 {
-        print("  --> stopped for \(prevTime) seconds")
-    }
-}
-*/
-                } else {
-                    ptCat = .moving
-                }
-
-                if idx > 0 {
-                    let seconds = p.seconds(between: points[idx - 1])
-                    let distance = p.distance(to: points[idx - 1])
-                    let calculatedSpeed = p.speed(seconds: seconds, distance: distance)
-                    let pointKmH = Converter.metersPerSecondToKilometersPerHour(metersSecond: p.speed)
-
-                    if (calculatedSpeed > 10.0 || pointKmH > 10.0) && distance > 0.040 {
-                        // 'max' overrides 0.0, which causes dividing issues
-                        let lower = max(0.1, min(calculatedSpeed, pointKmH))
-                        let higher = max(calculatedSpeed, pointKmH)
-                        let ratio = higher / lower
-                        if ratio > 20.0 {
-// print("speed: \(pointKmH) [\(calculatedSpeed)] -- ratio: \(ratio), seconds: \(Int(seconds)), distance: \(distance * 1000.0): \(p.time)")
-                            ptCat = PointCategory.poorQuality
-                            if ratio > 20 && distance > 20 {
-                                lastBadIndex = findLastBad(points, idx - 1, idx)
-                            }
-                        }
-                    }
-                }
-
-            } else {
-                ptCat = .poorQuality
-            }
-
-            category.append(PointInfo(p, ptCat))
-            idx += 1
-            if let badIndex = lastBadIndex, badIndex > idx {
-                for updateIndex in idx...badIndex {
-                    category.append(PointInfo(points[updateIndex], .poorQuality))
-                }
-                idx = badIndex + 1
-            }
-        }
-
-        return category
-    }
-
-    func findLastBad(_ points: [GpxPoint], _ lastGoodIndex: Int, _ firstBadIndex: Int) -> Int {
-        let lastGood = points[lastGoodIndex]
-        let end = min(firstBadIndex + 40, points.count - 1)
-        for index in firstBadIndex...end {
-            let p = points[index]
-            let distance = p.distance(to: lastGood)
-            if distance < 20.0 {
-                return index - 1
-            }
-        }
-
-        return firstBadIndex
     }
 
     private func getBounds(_ points: [GpxPoint]) -> (minLat:Double, minLon:Double, maxLat:Double, maxLon:Double) {
@@ -468,23 +380,5 @@ if ptCat == .stopped {
         }
 
         return sumSpeed / Double(points.count)
-    }
-
-    private func recentAverageSpeeds(_ points: [GpxPoint], _ start: Int, _ seconds: Int) -> (Double?, Double?) {
-        var sumGpxSpeed = 0.0
-        var index = start
-        var secondsDiff = 0
-        repeat {
-            secondsDiff = Int(points[start].seconds(between: points[index]))
-            sumGpxSpeed += points[index].speed
-            index -= 1
-        } while (index >= 0 && secondsDiff < seconds)
-
-        if secondsDiff >= seconds {
-            let calculatedSpeed = Converter.kilometersPerHourToMetersPerSecond(kmh: points[start].speed(between: points[index + 1]))
-            return (sumGpxSpeed / Double(seconds), calculatedSpeed / Double(seconds))
-        }
-
-        return (nil, nil)
     }
 }

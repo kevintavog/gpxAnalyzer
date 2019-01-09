@@ -19,6 +19,11 @@ public class Geo {
     static let radiusEarthKm = 6371.3
     static let oneDegreeLatitudeMeters = 111111.0
 
+    static public func bearingDelta(_ alpha: Int, _ beta: Int) -> Int {
+        let phi = abs(beta - alpha) % 360
+        return phi > 180 ? 360 - phi : phi
+    }
+
 
     // Use the small distance calculation (Pythagorus' theorem)
     // See the 'Equirectangular approximation' section of http://www.movable-type.co.uk/scripts/latlong.html

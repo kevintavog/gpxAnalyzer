@@ -4,6 +4,7 @@ public class StatsTrack : Codable, CustomStringConvertible {
     public let runs: [StatsRun]
     public let stops: [StatsStop]
     public let discardedPoints: [StatsDiscardedPoint]
+    public let vectors: [Vector]
 
     public let kilometers: Double
     public let seconds: Double
@@ -17,10 +18,11 @@ public class StatsTrack : Codable, CustomStringConvertible {
         return "\(Int(kilometers * 1000)) meters in \(seconds) seconds, \(averageSpeed) km/h on average"
     }
 
-    init(runs: [StatsRun], stops: [StatsStop], discardedPoints: [StatsDiscardedPoint]) {
+    init(runs: [StatsRun], stops: [StatsStop], discardedPoints: [StatsDiscardedPoint], vectors: [Vector]) {
         self.runs = runs
         self.stops = stops
         self.discardedPoints = discardedPoints
+        self.vectors = vectors
 
         self.kilometers = runs.reduce(0.0, { $0 + $1.kilometers })
         self.seconds = runs.reduce(0.0, { $0 + $1.seconds })
