@@ -32,11 +32,12 @@ public class StatsPoint : Codable, CustomStringConvertible {
         self.calculatedSpeed = calculatedSpeed
     }
 
-    init(gpx: GpxPoint, bearing: Int, kilometersIntoRun: Double, secondsIntoRun: Double, kilometersFromLast: Double) {
+    init(gpx: GpxPoint, bearing: Int, kilometersIntoRun: Double, secondsIntoRun: Double, kilometersFromLast: Double, calculatedSpeed: Double?) {
         self.gpx = gpx
         self.bearing = bearing
         self.kilometersIntoRun = kilometersIntoRun
         self.secondsIntoRun = secondsIntoRun
         self.kilometersFromLast = kilometersFromLast
+        self.calculatedSpeed = calculatedSpeed
     }
 }

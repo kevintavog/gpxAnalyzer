@@ -35,6 +35,7 @@ public class StatsRun : Codable, CustomStringConvertible {
     func add(gpx: GpxPoint) {
         var kmFromLast = 0.0
         var bearing = -1
+        var calculatedSpeed = -1.0
         if points.count == 0 {
             minLat = gpx.latitude
             minLon = gpx.longitude
@@ -43,14 +44,16 @@ public class StatsRun : Codable, CustomStringConvertible {
             kilometers = 0.0
             seconds = 0.0
         } else {
+            let prevPoint = points[points.count - 1]
             minLat = min(gpx.latitude, minLat)
             minLon = min(gpx.longitude, minLon)
             maxLat = max(gpx.latitude, maxLat)
             maxLon = max(gpx.longitude, maxLon)
-            seconds = gpx.seconds(between: points[0].gpx)
-            kmFromLast = gpx.distance(to: points[points.count - 1].gpx)
+            seconds = points[0].gpx.seconds(between: gpx)
+            kmFromLast = prevPoint.gpx.distance(to: gpx)
             kilometers += kmFromLast
-            bearing = points[points.count - 1].gpx.bearing(to: gpx)
+            bearing = prevPoint.gpx.bearing(to: gpx)
+            calculatedSpeed = prevPoint.gpx.speed(between: gpx)
         }
 
         points.append(StatsPoint(
@@ -58,7 +61,8 @@ public class StatsRun : Codable, CustomStringConvertible {
             bearing: bearing,
             kilometersIntoRun: kilometers,
             secondsIntoRun: seconds,
-            kilometersFromLast: kmFromLast))
+            kilometersFromLast: kmFromLast,
+            calculatedSpeed: calculatedSpeed))
     }
 
     public var description: String {

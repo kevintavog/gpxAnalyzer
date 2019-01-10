@@ -93,11 +93,16 @@ struct CategorizePoints {
             index -= 1
         } while (index >= 0 && secondsDiff < seconds)
 
+        var averageSpeed: Double?
         if secondsDiff >= seconds {
-            let calculatedSpeed = Converter.kilometersPerHourToMetersPerSecond(kmh: points[start].speed(between: points[index + 1]))
-            return (sumGpxSpeed / Double(seconds), calculatedSpeed / Double(seconds))
+            // return (sumGpxSpeed / Double(seconds), calculatedSpeed / Double(seconds))
+            averageSpeed = sumGpxSpeed / Double(seconds)
+        }
+        var calculatedSpeed: Double? = 0.0
+        if start > 0 {
+            calculatedSpeed = points[start].speed(between: points[start - 1])
         }
 
-        return (nil, nil)
+        return (averageSpeed, calculatedSpeed)
     }
 }

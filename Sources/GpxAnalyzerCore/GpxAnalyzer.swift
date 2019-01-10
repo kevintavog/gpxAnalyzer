@@ -2,7 +2,7 @@ import Foundation
 
 
 // Keep in mind that the beginning of a track is highly suspect: if the device is warming up or coming
-// out of a tunnel. Extra scrutiny is likely in order in for the beginning.
+// out of a tunnel, for example. Extra scrutiny is likely in order for the beginning.
 
 // From http://www.toptal.com/gis/adventures-in-gps-track-analytics-a-geospatial-primer
 //  Possible implementation: https://github.com/tkrajina/gpxpy
@@ -24,6 +24,11 @@ import Foundation
 //      Average speed: is either a specific activity, or one of a couple activities
 //          Use max speed, or max relative speed (multiplier between average & max) to decide
 
+
+// 
+// - Filter out all known bad points
+// - Calculate actual speed & bearing between each point
+// - 
 
 public class GpxAnalyzer {
     static let weighted = [0.4, 0.2, 0.4]
